@@ -1,6 +1,9 @@
 package ru.mail.polis.open.task3;
 
 import org.jetbrains.annotations.Nullable;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
 
 /**
  * Для проверки класса на корректность следует использовать тесты.
@@ -24,6 +27,20 @@ public final class CorrectBracketSequenceChecker {
     private CorrectBracketSequenceChecker() {
         /* todo: append code if needed */
     }
+
+    private static final char OPEN_ROUND_BRACE = '(';
+    private static final char OPEN_SQUARE_BRACE = '[';
+    private static final char OPEN_FIGURE_BRACE = '{';
+    private static final char CLOSE_ROUND_BRACE = ')';
+    private static final char CLOSE_SQUARE_BRACE = ']';
+    private static final char CLOSE_FIGURE_BRACE = '}';
+
+    private static int counterOfCorrectTries = 0;
+    private static int counterOfWrongTries = 0;
+    private static String lastSuccessSequence;
+    private static Deque<Character> stackOfChar = new ArrayDeque<>();
+    private static Character prevElementInStack;
+
 
     /**
      * Метод проверяющий скобочную последовательность на правильность.
@@ -49,7 +66,104 @@ public final class CorrectBracketSequenceChecker {
      *                                  или если входная строка содержит больше ста символов
      */
     public static boolean checkSequence(@Nullable String sequence) {
-        throw new UnsupportedOperationException("todo: implement this");
+        counterOfWrongTries = 0;
+        counterOfCorrectTries = 0;
+        //пустая строка - правильная
+        if (sequence.equals("")) {
+            counterOfCorrectTries++;
+            return true;
+        }
+
+        //длина строки больше ста символов
+        if (sequence.length() > 100) {
+            counterOfWrongTries++;
+            counterOfWrongTries += counterOfCorrectTries;
+            throw new IllegalArgumentException("The string length is more than 100");
+        }
+
+        for (int i = 0; i < sequence.length(); i++) {
+            //Проверка на наличие символов, неявляющихся скобками
+            if ((sequence.charAt(i) != OPEN_ROUND_BRACE)
+                    && (sequence.charAt(i) != OPEN_FIGURE_BRACE)
+                    && (sequence.charAt(i) != OPEN_SQUARE_BRACE)
+                    && (sequence.charAt(i) != CLOSE_FIGURE_BRACE)
+                    && (sequence.charAt(i) != CLOSE_ROUND_BRACE)
+                    && (sequence.charAt(i) != CLOSE_SQUARE_BRACE)) {
+                counterOfWrongTries++;
+                counterOfWrongTries += counterOfCorrectTries;
+                throw new IllegalArgumentException("This symbol isn't bracket: " + sequence.charAt(i));
+            }
+
+            //Открытые скобки
+            if ((sequence.charAt(i) == OPEN_ROUND_BRACE)
+                    || (sequence.charAt(i) == OPEN_SQUARE_BRACE)
+                    || (sequence.charAt(i) == OPEN_FIGURE_BRACE)) {
+
+                stackOfChar.push(sequence.charAt(i));
+            }
+
+            //Круглые скобки
+            if (sequence.charAt(i) == CLOSE_ROUND_BRACE) {
+                if (stackOfChar.size() == 0) {
+                    counterOfWrongTries++;
+                    counterOfWrongTries += counterOfCorrectTries;
+                    return false;
+                } else {
+                    prevElementInStack = stackOfChar.pop();
+                    if (prevElementInStack != OPEN_ROUND_BRACE) {
+                        counterOfWrongTries++;
+                        counterOfWrongTries += counterOfCorrectTries;
+                        return false;
+                    } else {
+                        counterOfCorrectTries++;
+                    }
+                }
+            }
+
+            //Квадратные скобки
+            if (sequence.charAt(i) == CLOSE_SQUARE_BRACE) {
+                if (stackOfChar.size() == 0) {
+                    counterOfWrongTries++;
+                    counterOfWrongTries += counterOfCorrectTries;
+                    return false;
+                } else {
+                    prevElementInStack = stackOfChar.pop();
+                    if (prevElementInStack != OPEN_SQUARE_BRACE) {
+                        counterOfWrongTries++;
+                        counterOfWrongTries += counterOfCorrectTries;
+                        return false;
+                    } else {
+                        counterOfCorrectTries++;
+                    }
+                }
+            }
+
+            //Фигурные скобки
+            if (sequence.charAt(i) == CLOSE_FIGURE_BRACE) {
+                if (stackOfChar.size() == 0) {
+                    counterOfWrongTries++;
+                    counterOfWrongTries += counterOfCorrectTries;
+                    return false;
+                } else {
+                    prevElementInStack = stackOfChar.pop();
+                    if (prevElementInStack != OPEN_FIGURE_BRACE) {
+                        counterOfWrongTries++;
+                        counterOfWrongTries += counterOfCorrectTries;
+                        return false;
+                    } else {
+                        counterOfCorrectTries++;
+                    }
+                }
+            }
+        }
+        counterOfWrongTries += counterOfCorrectTries;
+        lastSuccessSequence = sequence;
+
+        if (stackOfChar.size() != 0) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -59,7 +173,7 @@ public final class CorrectBracketSequenceChecker {
      * @return количество удачных проверок
      */
     public static int getSuccessChecksCount() {
-        throw new UnsupportedOperationException("todo: implement this");
+        return counterOfCorrectTries;
     }
 
     /**
@@ -69,7 +183,7 @@ public final class CorrectBracketSequenceChecker {
      * @return количество неудачных проверок
      */
     public static int getFailChecksCount() {
-        throw new UnsupportedOperationException("todo: implement this");
+        return counterOfWrongTries;
     }
 
     /**
@@ -78,6 +192,6 @@ public final class CorrectBracketSequenceChecker {
      * @return последняя правильная скобочная последовательность или null если такой ещё не было
      */
     public static @Nullable String getLastSuccessSequence() {
-        throw new UnsupportedOperationException("todo: implement this");
+        return lastSuccessSequence;
     }
 }
