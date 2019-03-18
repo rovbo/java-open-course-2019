@@ -1,6 +1,9 @@
 package ru.mail.polis.open.task3;
 
 import org.jetbrains.annotations.Nullable;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
 
 /**
  * Для проверки класса на корректность следует использовать тесты.
@@ -24,6 +27,16 @@ public final class CorrectBracketSequenceChecker {
     private CorrectBracketSequenceChecker() {
         /* todo: append code if needed */
     }
+
+    private static final char[] OPEN_BRACKETS = {'(','[','{'};
+    private static final char[] CLOSE_BRACKETS = {')',']','}'};
+
+    private static int counterOfCorrectTries = 0;
+    private static int counterOfWrongTries = 0;
+    private static String lastSuccessSequence;
+    private static Deque<Character> stackOfChar = new ArrayDeque<>();
+    private static Character prevElementInStack;
+
 
     /**
      * Метод проверяющий скобочную последовательность на правильность.
@@ -49,7 +62,64 @@ public final class CorrectBracketSequenceChecker {
      *                                  или если входная строка содержит больше ста символов
      */
     public static boolean checkSequence(@Nullable String sequence) {
-        throw new UnsupportedOperationException("todo: implement this");
+        //пустая строка - правильная
+        if (sequence.equals("")) {
+            counterOfCorrectTries++;
+            return true;
+        }
+
+        //длина строки больше ста символов
+        if (sequence.length() > 100) {
+            counterOfWrongTries++;
+            throw new IllegalArgumentException("The string length is more than 100");
+        }
+
+        for (int i = 0; i < sequence.length(); i++) {
+            //Проверка на наличие символов, неявляющихся скобками
+
+            if ((sequence.charAt(i) != OPEN_BRACKETS[0]) && (sequence.charAt(i) != CLOSE_BRACKETS[0])
+                    && (sequence.charAt(i) != OPEN_BRACKETS[1]) && (sequence.charAt(i) != CLOSE_BRACKETS[1])
+                    && (sequence.charAt(i) != OPEN_BRACKETS[2]) && (sequence.charAt(i) != CLOSE_BRACKETS[2])) {
+                stackOfChar.clear();
+                counterOfWrongTries++;
+                throw new IllegalArgumentException("This symbol isn't bracket: " + sequence.charAt(i));
+            }
+
+
+            //Открытые скобки
+            for (int j = 0; j < 3; j++) {
+                if (sequence.charAt(i) == OPEN_BRACKETS[j]) {
+                    stackOfChar.push(sequence.charAt(i));
+                }
+            }
+
+            //Закрытые скобки
+            for (int j = 0; j < 3; j++) {
+                if (sequence.charAt(i) == CLOSE_BRACKETS[j]) {
+                    if (stackOfChar.size() == 0) {
+                        counterOfWrongTries++;
+                        return false;
+                    } else {
+                        prevElementInStack = stackOfChar.pop();
+                        if (prevElementInStack != OPEN_BRACKETS[j]) {
+                            stackOfChar.clear();
+                            counterOfWrongTries++;
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        lastSuccessSequence = sequence;
+
+        if (stackOfChar.size() != 0) {
+            stackOfChar.clear();
+            counterOfWrongTries++;
+            return false;
+        }
+        counterOfCorrectTries++;
+        return true;
     }
 
     /**
@@ -59,7 +129,7 @@ public final class CorrectBracketSequenceChecker {
      * @return количество удачных проверок
      */
     public static int getSuccessChecksCount() {
-        throw new UnsupportedOperationException("todo: implement this");
+        return counterOfCorrectTries;
     }
 
     /**
@@ -69,7 +139,7 @@ public final class CorrectBracketSequenceChecker {
      * @return количество неудачных проверок
      */
     public static int getFailChecksCount() {
-        throw new UnsupportedOperationException("todo: implement this");
+        return counterOfWrongTries;
     }
 
     /**
@@ -78,6 +148,12 @@ public final class CorrectBracketSequenceChecker {
      * @return последняя правильная скобочная последовательность или null если такой ещё не было
      */
     public static @Nullable String getLastSuccessSequence() {
-        throw new UnsupportedOperationException("todo: implement this");
+        return lastSuccessSequence;
+    }
+
+    public static void resetParameters() {
+        lastSuccessSequence = null;
+        counterOfCorrectTries = 0;
+        counterOfWrongTries = 0;
     }
 }
