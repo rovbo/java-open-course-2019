@@ -18,6 +18,7 @@ public class CorrectBracketSequenceCheckerTest {
     @Test
     void testCheckSequenceTrue() {
         assertTrue(CorrectBracketSequenceChecker.checkSequence(""));
+        assertTrue(CorrectBracketSequenceChecker.checkSequence(null));
         assertTrue(CorrectBracketSequenceChecker.checkSequence("()"));
         assertTrue(CorrectBracketSequenceChecker.checkSequence("{}"));
         assertTrue(CorrectBracketSequenceChecker.checkSequence("[]"));
@@ -105,6 +106,8 @@ public class CorrectBracketSequenceCheckerTest {
 
     @Test
     void testGetLastSuccessSequence() {
+        assertNull(CorrectBracketSequenceChecker.getLastSuccessSequence());
+
         CorrectBracketSequenceChecker.checkSequence("()");
         assertEquals("()", CorrectBracketSequenceChecker.getLastSuccessSequence());
 
